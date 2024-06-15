@@ -1,7 +1,7 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const SpotifyWebApi = require('spotify-web-api-node');
-const dotenv = require('dotenv');
+import express from 'express';
+import SpotifyWebApi from 'spotify-web-api-node';
+import arcjet, { detectBot, shield, fixedWindow } from '@arcjet/node';
+import dotenv from 'dotenv'
 dotenv.config();
 
 const app = express();
@@ -13,9 +13,54 @@ const spotifyApi = new SpotifyWebApi({
   redirectUri: process.env.SPOTIFY_REDIRECT_URI,
 });
 
+const aj = arcjet({
+  key: process.env.ARCJET_KEY,
+  rules: [
+    shield({
+      mode: "LIVE", 
+    }),
+    fixedWindow({
+      mode: "LIVE",
+      characteristics: ["ip.src"],
+      match:"/generate-playlist",
+      window: "1m",
+      max: 1,
+    }),
+    detectBot({
+      mode: "LIVE",
+      block: [        
+        "LIKELY_AUTOMATED",
+      ],
+      patterns: {
+        remove: [
+          "^curl",
+        ],
+      },
+    }),
+  ],
+});
+
 app.set('view engine', 'ejs');
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
+app.use(async (req, res, next) => {
+  try {
+    const decision = await aj.protect(req);
+
+    if (decision.isDenied()) {
+      console.error("Arcjet protection denied", decision);
+      res.writeHead(403, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Forbidden" }));
+    } else {
+      next();
+    }
+  } catch (error) {
+    console.error("Arcjet protection error", error);
+    res.status(500).send({ error: 'Internal Server Error' });
+  }
+});
 
 let accessToken = null;
 
@@ -89,20 +134,17 @@ app.post('/save-playlist', checkAuth, async (req, res) => {
     const userData = await spotifyApi.getMe();
     const userId = userData.body.id;
 
-    // Create a new playlist
     const newPlaylist = await spotifyApi.createPlaylist(userId, {
       name: playlistName,
       public: false
     });
 
-    // Add tracks to the new playlist
     await spotifyApi.addTracksToPlaylist(newPlaylist.body.id, JSON.parse(trackUris));
 
     res.status(200).send(`Playlist '${playlistName}' created successfully!`);
   } catch (error) {
     console.error('Error creating playlist:', error);
 
-    // Check if the error has a response property
     if (error.response) {
       console.error('Spotify API response:', error.response);
       res.status(error.response.status).send(error.response.data);
