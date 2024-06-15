@@ -1,7 +1,5 @@
 # Spotify Playlist Generator
 
-## Overview
-
 The Spotify Playlist Generator is a web application that allows users to create custom playlists based on their favorite artists and moods. The application leverages the Spotify Web API to search for artists, generate track recommendations, and save playlists directly to the user's Spotify account.
 
 ## Features
@@ -48,10 +46,14 @@ The Spotify Playlist Generator is a web application that allows users to create 
 
 1. **Login**:
     - Click on the "Login" button to authenticate with your Spotify account.
+      ![image](https://github.com/Arindam200/spotify-playlist-generator/assets/109217591/b1ac410c-9bf1-45ac-b965-56f7f7db96a3)
+
 
 2. **Generate Playlist**:
     - Enter the name of your favorite artist and select a mood.
     - Click on "Generate Playlist" to get track recommendations.
+      ![image](https://github.com/Arindam200/spotify-playlist-generator/assets/109217591/55c4a21b-8a04-444d-a78b-1635551923d4)
+
 
 3. **Save Playlist**:
     - Enter a name for your new playlist.
