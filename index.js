@@ -71,7 +71,8 @@ const checkAuth = (req, res, next) => {
 };
 
 app.get('/', (req, res) => {
-  res.render('index', { loggedIn: !!accessToken });
+  // res.render('index', { loggedIn: !!accessToken });
+  res.send('Hello World');
 });
 
 app.get('/login', (req, res) => {
