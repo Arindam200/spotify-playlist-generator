@@ -1,7 +1,7 @@
 import express from 'express';
 import SpotifyWebApi from 'spotify-web-api-node';
 import arcjet, { detectBot, shield, fixedWindow } from '@arcjet/node';
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
@@ -73,7 +73,6 @@ const checkAuth = (req, res, next) => {
 
 app.get('/', (req, res) => {
   res.render('index', { loggedIn: !!accessToken });
-  // res.send('Hello World');
 });
 
 app.get('/login', (req, res) => {
