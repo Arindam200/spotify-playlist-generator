@@ -24,7 +24,7 @@ const aj = arcjet({
       characteristics: ["ip.src"],
       match:"/generate-playlist",
       window: "1m",
-      max: 1,
+      max: 100,
     }),
     detectBot({
       mode: "LIVE",
