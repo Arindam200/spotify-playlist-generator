@@ -41,6 +41,7 @@ const aj = arcjet({
 });
 
 app.set('view engine', 'ejs');
+app.set('views', './views');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -71,8 +72,8 @@ const checkAuth = (req, res, next) => {
 };
 
 app.get('/', (req, res) => {
-  // res.render('index', { loggedIn: !!accessToken });
-  res.send('Hello World');
+  res.render('index', { loggedIn: !!accessToken });
+  // res.send('Hello World');
 });
 
 app.get('/login', (req, res) => {
