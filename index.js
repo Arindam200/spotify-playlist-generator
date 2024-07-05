@@ -2,6 +2,7 @@ import express from 'express';
 import SpotifyWebApi from 'spotify-web-api-node';
 import arcjet, { detectBot, shield, fixedWindow } from '@arcjet/node';
 import dotenv from 'dotenv';
+import session from 'express-session';
 dotenv.config();
 
 const app = express();
@@ -29,7 +30,7 @@ const aj = arcjet({
     detectBot({
       mode: "LIVE",
       block: [        
-        "LIKELY_AUTOMATED",
+        "AUTOMATED",
       ],
       patterns: {
         remove: [
@@ -44,6 +45,12 @@ app.set('view engine', 'ejs');
 app.set('views', './views');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}));
 
 app.use(async (req, res, next) => {
   try {
@@ -62,17 +69,31 @@ app.use(async (req, res, next) => {
   }
 });
 
-let accessToken = null;
-
 const checkAuth = (req, res, next) => {
-  if (!accessToken) {
+  if (!req.session.accessToken) {
     return res.redirect('/');
   }
   next();
 };
 
+const refreshAccessToken = async (req, res, next) => {
+  if (req.session.accessToken && req.session.refreshToken) {
+    try {
+      const data = await spotifyApi.refreshAccessToken();
+      req.session.accessToken = data.body['access_token'];
+      spotifyApi.setAccessToken(req.session.accessToken);
+      next();
+    } catch (error) {
+      console.error('Error refreshing access token', error);
+      res.status(500).send('Internal Server Error');
+    }
+  } else {
+    next();
+  }
+};
+
 app.get('/', (req, res) => {
-  res.render('index', { loggedIn: !!accessToken });
+  res.render('index', { loggedIn: !!req.session.accessToken });
 });
 
 app.get('/login', (req, res) => {
@@ -85,9 +106,10 @@ app.get('/callback', async (req, res) => {
   const { code } = req.query;
   try {
     const data = await spotifyApi.authorizationCodeGrant(code);
-    accessToken = data.body['access_token'];
-    spotifyApi.setAccessToken(accessToken);
-    spotifyApi.setRefreshToken(data.body['refresh_token']);
+    req.session.accessToken = data.body['access_token'];
+    req.session.refreshToken = data.body['refresh_token'];
+    spotifyApi.setAccessToken(req.session.accessToken);
+    spotifyApi.setRefreshToken(req.session.refreshToken);
     res.redirect('/');
   } catch (err) {
     console.error('Error during authorization', err);
@@ -95,7 +117,7 @@ app.get('/callback', async (req, res) => {
   }
 });
 
-app.post('/generate-playlist', checkAuth, async (req, res) => {
+app.post('/generate-playlist', checkAuth, refreshAccessToken, async (req, res) => {
   const { artistName, mood } = req.body;
 
   try {
@@ -127,7 +149,7 @@ app.post('/generate-playlist', checkAuth, async (req, res) => {
   }
 });
 
-app.post('/save-playlist', checkAuth, async (req, res) => {
+app.post('/save-playlist', checkAuth, refreshAccessToken, async (req, res) => {
   const { playlistName, trackUris } = req.body;
 
   try {
