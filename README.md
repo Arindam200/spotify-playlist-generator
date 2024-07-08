@@ -27,10 +27,12 @@ The Spotify Playlist Generator is a web application that allows users to create 
 3. **Set up environment variables**:
     Create a `.env` file in the root directory and add your Spotify API credentials:
     ```env
-    SPOTIFY_CLIENT_ID=your_spotify_client_id
-    SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
+    SPOTIFY_CLIENT_ID=Your_Spotify_Client_ID
+    SPOTIFY_CLIENT_SECRET=Your_Spotify_Client_Secret
     SPOTIFY_REDIRECT_URI=http://localhost:3000/callback
-    PORT=3000
+    ARCJET_KEY=Your_Arcjet_Key
+    ARCJET_ENV=development
+    SESSION_SECRET=Your_Session_Secret
     ```
 
 4. **Run the application**:
@@ -46,13 +48,10 @@ The Spotify Playlist Generator is a web application that allows users to create 
 
 1. **Login**:
     - Click on the "Login" button to authenticate with your Spotify account.
-      ![image](https://github.com/Arindam200/spotify-playlist-generator/assets/109217591/b1ac410c-9bf1-45ac-b965-56f7f7db96a3)
-
 
 2. **Generate Playlist**:
     - Enter the name of your favorite artist and select a mood.
     - Click on "Generate Playlist" to get track recommendations.
-      ![image](https://github.com/Arindam200/spotify-playlist-generator/assets/109217591/55c4a21b-8a04-444d-a78b-1635551923d4)
 
 
 3. **Save Playlist**:
